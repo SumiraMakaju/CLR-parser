@@ -1,22 +1,22 @@
+#include "grammar.h"
+#include "lr1.h"
 #include "parser.h"
 #include <sstream>
 #include <algorithm>
 #include <iomanip>
-#include "lr1.h"
-#include "grammar.h"
+#include <cstdint>
 
 Parser::Parser(Grammar& g, ParseTable& t) : grammar_(g), table_(t) {}
 
+
 ParseResult Parser::parse(const std::vector<std::string>& tokens) {
     ParseResult result;
-
     std::vector<std::string> input = tokens;
     input.push_back("$");
 
     std::vector<int>         stateStack  = {0};
     std::vector<std::string> symbolStack = {};
     int pos = 0;
-
     while (true) {
         int               curState = stateStack.back();
         const std::string& curTok  = input[static_cast<size_t>(pos)];
@@ -26,8 +26,6 @@ ParseResult Parser::parse(const std::vector<std::string>& tokens) {
         step.symbolStack      = symbolStack;
         step.remainingInput   = std::vector<std::string>(input.begin() + pos, input.end());
         step.reduceProduction = -1;
-
-        // Look up action
         auto rowIt = table_.action.find(curState);
         if (rowIt == table_.action.end() ||
             rowIt->second.find(curTok) == rowIt->second.end() ||
@@ -39,9 +37,7 @@ ParseResult Parser::parse(const std::vector<std::string>& tokens) {
             result.errorMessage = step.action;
             return result;
         }
-
         const Action& act = rowIt->second.at(curTok);
-
         if (act.type == ActionType::SHIFT) {
             step.action     = "Shift " + curTok + ", go to state " + std::to_string(act.value);
             step.actionType = "shift";
@@ -49,7 +45,6 @@ ParseResult Parser::parse(const std::vector<std::string>& tokens) {
             stateStack.push_back(act.value);
             symbolStack.push_back(curTok);
             pos++;
-
         } else if (act.type == ActionType::REDUCE) {
             const Production& prod   = grammar_.productions[static_cast<size_t>(act.value)];
             int               rhsLen = static_cast<int>(prod.rhs.size());
@@ -109,6 +104,7 @@ static std::string actionCode(const Action& a) {
         default:                 return "";
     }
 }
+
 std::string serializeToJSON(
     const Grammar&                                   g,
     const std::vector<State>&                        states,
@@ -162,12 +158,8 @@ std::string serializeToJSON(
     // Transitions (graph edges)
     o << "\"transitions\": [\n";
     bool firstTrans = true;
-    for (const auto& kv1 : transitions) {
-        const auto& from = kv1.first;
-        const auto& edges = kv1.second;
-        for (const auto& kv2 : edges) {
-            const auto& sym = kv2.first;
-            const auto& to = kv2.second;
+    for (const auto& [from, edges] : transitions) {
+        for (const auto& [sym, to] : edges) {
             if (!firstTrans) o << ",\n";
             firstTrans = false;
             o << "  {\"from\":" << from << ", \"to\":" << to
@@ -179,16 +171,12 @@ std::string serializeToJSON(
     // ACTION table
     o << "\"actionTable\": {\n";
     bool firstRow = true;
-    for (const auto& kv1 : table.action) {
-        const auto& stId = kv1.first;
-        const auto& row = kv1.second;
+    for (const auto& [stId, row] : table.action) {
         if (!firstRow) o << ",\n";
         firstRow = false;
         o << "  \"" << stId << "\": {";
         bool firstCell = true;
-        for (const auto& kv2 : row) {
-            const auto& tok = kv2.first;
-            const auto& act = kv2.second;
+        for (const auto& [tok, act] : row) {
             if (!firstCell) o << ", ";
             firstCell = false;
             o << jStr(tok) << ":" << jStr(actionCode(act));
@@ -200,16 +188,12 @@ std::string serializeToJSON(
     // GOTO table
     o << "\"gotoTable\": {\n";
     firstRow = true;
-    for (const auto& kv1 : table.gotoTable) {
-        const auto& stId = kv1.first;
-        const auto& row = kv1.second;
+    for (const auto& [stId, row] : table.gotoTable) {
         if (!firstRow) o << ",\n";
         firstRow = false;
         o << "  \"" << stId << "\": {";
         bool firstCell = true;
-        for (const auto& kv2 : row) {
-            const auto& nt = kv2.first;
-            const auto& nextSt = kv2.second;
+        for (const auto& [nt, nextSt] : row) {
             if (!firstCell) o << ", ";
             firstCell = false;
             o << jStr(nt) << ":" << nextSt;
@@ -279,11 +263,28 @@ std::string serializeToJSON(
         if (i + 1 < static_cast<int>(result.steps.size())) o << ",";
         o << "\n";
     }
-    o << "  ]\n}\n}\n";
+    o << "  ]\n},\n";
+
+    o << "\"firstSets\": {\n";
+    bool firstFS = true;
+    for (const auto& [sym, fset] : g.firstSets) {
+        if (sym == EPSILON || sym == END_OF_INPUT) continue;
+        if (!firstFS) o << ",\n";
+        firstFS = false;
+        o << "  " << jStr(sym.name) << ": [";
+        bool ft = true;
+        for (const auto& f : fset) {
+            if (f == EPSILON) continue;
+            if (!ft) o << ",";
+            ft = false;
+            o << jStr(f.name);
+        }
+        o << "]";
+    }
+    o << "\n}\n}\n";
     return o.str();
 }
 
-// Human-readable parse trace 
 
 void printParseTrace(const ParseResult& result, std::ostream& out) {
     const int W1 = 22, W2 = 18, W3 = 18, W4 = 8;
@@ -344,7 +345,6 @@ void printParseTrace(const ParseResult& result, std::ostream& out) {
     if (!result.errorMessage.empty()) out << "Error:  " << result.errorMessage << "\n";
 }
 
-//  Full deployment report 
 
 void printFullReport(
     const Grammar&    g,

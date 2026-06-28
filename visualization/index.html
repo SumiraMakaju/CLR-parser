@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="css/table.css">
   <link rel="stylesheet" href="css/graph.css">
   <style>
+   
     .grammar-productions {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
@@ -70,6 +71,7 @@
       gap: 8px;
     }
 
+    /* States tab */
     .states-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
@@ -116,13 +118,14 @@
 </head>
 <body>
 
+
 <header>
   <div class="header-orbs" id="header-orbs"></div>
   <h1>LR(1) Parser <span>Visualizer</span></h1>
 </header>
 
-<div class="app-layout">
 
+<div class="app-layout">
   <nav class="sidebar">
     <div class="sidebar-section-label">Analysis</div>
 
@@ -150,17 +153,15 @@
     </button>
   </nav>
 
+
   <main class="content">
+
 
     <div id="tab-grammar" class="panel active">
 
       <div class="section">
         <div class="section-title">Productions</div>
         <div class="grammar-productions" id="grammar-productions"></div>
-        <div class="note">
-          In this grammar <code>*</code> is a unary prefix dereference operator (as in C), not multiplication.
-          The string <code>id = * id</code> means "assign the value at the address stored in id."
-        </div>
       </div>
 
       <div class="two-col">
@@ -188,6 +189,7 @@
       </div>
     </div>
 
+    
     <div id="tab-table" class="panel">
       <div class="banner banner-ok" id="conflict-banner">
         No conflicts detected. The grammar is LR(1) and the parse table is deterministic.
@@ -206,7 +208,7 @@
       </div>
     </div>
 
-   <div id="tab-graph" class="panel">
+    <div id="tab-graph" class="panel">
       <div class="section">
         <div class="section-title">LR(1) Automaton State Transition Graph</div>
         <p style="font-family:var(--font-ui);font-size:0.82rem;color:var(--text-muted);margin-bottom:10px;">
@@ -225,6 +227,7 @@
       </div>
     </div>
 
+  
     <div id="tab-simulation" class="panel">
 
       <div class="controls">
@@ -279,7 +282,7 @@
 
         <div>
           <div class="section">
-            <div class="section-title">Current State &mdash; <strong id="cur-state-num"></strong></div>
+            <div class="section-title">Current State <strong id="cur-state-num"></strong></div>
             <div class="state-items" id="cur-state-items"></div>
           </div>
           <div class="section">
@@ -291,12 +294,10 @@
 
     </div>
 
+
     <div id="tab-trace" class="panel">
       <div class="section">
         <div class="section-title">Traditional Parse Trace Table</div>
-        <p style="font-family:var(--font-ui);font-size:0.83rem;color:var(--text-muted);margin-bottom:12px;">
-          Standard format for compiler design exam submissions. Click any row to jump to that step in the simulation.
-        </p>
         <div class="table-wrap">
           <table class="parse-table" id="trace-table-el"></table>
         </div>
@@ -306,7 +307,6 @@
   </main>
 </div>
 
-<script src="js/data.js"></script>
 <script src="js/grammar.js"></script>
 <script src="js/simulation.js"></script>
 <script src="js/parsetable.js"></script>

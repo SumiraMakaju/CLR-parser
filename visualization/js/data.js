@@ -1,2 +1,1 @@
-const DATA = null;
-const FIRST_SETS = null;
+var DATA = null;

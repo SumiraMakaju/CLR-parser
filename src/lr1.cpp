@@ -21,7 +21,6 @@ LR1Builder::LR1Builder(Grammar& g) : grammar_(g) {}
 ItemSet LR1Builder::closure(const ItemSet& items) {
     ItemSet result = items;
     bool changed = true;
-
     while (changed) {
         changed = false;
         ItemSet toAdd;
@@ -33,13 +32,10 @@ ItemSet LR1Builder::closure(const ItemSet& items) {
 
             const Symbol& B = prod.rhs[static_cast<size_t>(item.dotPos)];
             if (B.isTerminal) continue;
-
-            // beta = symbols after B in this production
             std::vector<Symbol> beta(
                 prod.rhs.begin() + item.dotPos + 1,
                 prod.rhs.end()
             );
-
             for (const auto& p : grammar_.productions) {
                 if (!(p.lhs == B)) continue;
 
@@ -54,14 +50,12 @@ ItemSet LR1Builder::closure(const ItemSet& items) {
                 }
             }
         }
-
         result.insert(toAdd.begin(), toAdd.end());
     }
 
     return result;
 }
 
-// GOTO(items, sym): advance dot past sym in every matching item, then close
 ItemSet LR1Builder::gotoSet(const ItemSet& items, const Symbol& sym) {
     ItemSet kernel;
     for (const auto& item : items) {
@@ -75,7 +69,6 @@ ItemSet LR1Builder::gotoSet(const ItemSet& items, const Symbol& sym) {
     return closure(kernel);
 }
 
-// Return id of an existing state matching items, or create a new one
 int LR1Builder::findOrAddState(const ItemSet& items) {
     for (const auto& s : states_) {
         if (s.items == items) return s.id;
@@ -85,7 +78,6 @@ int LR1Builder::findOrAddState(const ItemSet& items) {
     return id;
 }
 
-// Build the full canonical LR(1) collection via BFS, recording transitions
 void LR1Builder::build() {
     LR1Item start{0, 0, END_OF_INPUT};
     findOrAddState(closure({start}));
@@ -118,13 +110,11 @@ void LR1Builder::buildTable() {
             const Production& prod = grammar_.productions[static_cast<size_t>(item.productionId)];
 
             if (item.dotPos < static_cast<int>(prod.rhs.size())) {
-                // Dot not at end
                 const Symbol& next = prod.rhs[static_cast<size_t>(item.dotPos)];
                 auto it = transitions_[state.id].find(next.name);
                 if (it == transitions_[state.id].end()) continue;
 
                 if (next.isTerminal) {
-                    // SHIFT
                     Action act{ActionType::SHIFT, it->second};
                     auto& cell = table_.action[state.id][next.name];
                     if (cell.type != ActionType::ERROR &&
@@ -136,12 +126,10 @@ void LR1Builder::buildTable() {
                     }
                     cell = act;
                 } else {
-                    // GOTO
                     table_.gotoTable[state.id][next.name] = it->second;
                 }
 
             } else {
-                // Dot at end: REDUCE or ACCEPT
                 if (prod.lhs == grammar_.augmentedStart && item.lookahead == END_OF_INPUT) {
                     table_.action[state.id]["$"] = {ActionType::ACCEPT, 0};
                 } else {
