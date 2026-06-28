@@ -1,0 +1,51 @@
+/* Tab navigation */
+.tabs {
+  display: flex;
+  gap: 0;
+  background: var(--pink-100);
+  padding: 8px 20px 0;
+  border-bottom: 2px solid var(--border);
+  overflow-x: auto;
+}
+
+.tab {
+  padding: 9px 20px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-radius: 8px 8px 0 0;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  position: relative;
+  letter-spacing: 0.2px;
+}
+
+.tab:hover {
+  background: var(--pink-200);
+  color: var(--text);
+}
+
+.tab.active {
+  background: var(--surface);
+  color: #b71c5e;
+  border-bottom: 2px solid var(--surface);
+  margin-bottom: -2px;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--pink-300), var(--blue-300));
+  animation: tabUnderline 0.22s ease;
+}
+
+@keyframes tabUnderline {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}

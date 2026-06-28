@@ -1,0 +1,42 @@
+function renderGrammar() {
+  // Productions
+  const grid = document.getElementById('grammar-productions');
+  DATA.productions.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'prod-row';
+    row.style.animationDelay = (i * 0.05) + 's';
+    row.innerHTML =
+      `<span class="prod-id">${p.id}</span>` +
+      `<span class="prod-text">${p.lhs} &rarr; ${p.rhs.join(' ')}</span>`;
+    grid.appendChild(row);
+  });
+
+  // Terminals
+  const tEl = document.getElementById('grammar-terminals');
+  DATA.terminals.forEach(t => {
+    const s = document.createElement('span');
+    s.className = 'sym-chip sym-terminal';
+    s.textContent = t;
+    tEl.appendChild(s);
+  });
+
+  // Non-terminals
+  const ntEl = document.getElementById('grammar-nonterminals');
+  DATA.nonTerminals.forEach(nt => {
+    const s = document.createElement('span');
+    s.className = 'sym-chip sym-nonterminal';
+    s.textContent = nt;
+    ntEl.appendChild(s);
+  });
+
+  // FIRST sets
+  const fsEl = document.getElementById('grammar-first');
+  Object.entries(FIRST_SETS).forEach(([sym, set]) => {
+    const div = document.createElement('div');
+    div.className = 'first-entry';
+    div.innerHTML =
+      `<span class="first-sym">FIRST(${sym})</span>` +
+      ` = { ${set.join(', ')} }`;
+    fsEl.appendChild(div);
+  });
+}
