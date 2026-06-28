@@ -18,7 +18,7 @@ function renderParseTable() {
 
     allTerms.forEach(t => {
       const act = (DATA.actionTable[i] || {})[t];
-      if (!act) { html += '<td class="cell-empty">--</td>'; return; }
+      if (!act) { html += '<td class="cell-empty"></td>'; return; }
       const cls = act === 'acc' ? 'cell-accept'
                 : act.startsWith('s') ? 'cell-shift'
                 : 'cell-reduce';
@@ -29,7 +29,7 @@ function renderParseTable() {
       const gt = (DATA.gotoTable[i] || {})[n];
       html += gt !== undefined
         ? `<td class="cell-shift">${gt}</td>`
-        : '<td class="cell-empty">--</td>';
+        : '<td class="cell-empty"></td>';
     });
 
     html += '</tr>';

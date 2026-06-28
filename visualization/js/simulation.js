@@ -60,14 +60,36 @@ function simulateParse(tokens) {
   return steps;
 }
 
-function loadAndParse() {
+const BACKEND = 'http://localhost:7373';
+
+async function loadAndParse() {
   const raw    = document.getElementById('input-string').value.trim();
   const tokens = raw.split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return;
+
+  if (BACKEND) {
+    try {
+      const res = await fetch(`${BACKEND}/parse?q=${encodeURIComponent(raw)}`, { signal: AbortSignal.timeout(1500) });
+      if (res.ok) {
+        const json = await res.json();
+        parseSteps = json.parseResult.steps;
+        // Merge fresh table/state data into DATA for graph and table sync
+        Object.assign(DATA, json);
+        finishLoad();
+        return;
+      }
+    } catch (_) {
+      // Backend not running, fall through to JS simulation
+    }
+  }
 
   parseSteps = (tokens.join(' ') === 'id = * id')
     ? DATA.parseResult.steps
     : simulateParse(tokens);
+  finishLoad();
+}
 
+function finishLoad() {
   currentStep = 0;
   buildStepLog();
   renderStep(0);
@@ -140,7 +162,6 @@ function renderStep(idx) {
     `<span>${step.action}</span>` +
     `</div>`;
 
-  // Current state items
   const curState  = step.stateStack[step.stateStack.length - 1];
   const stateData = DATA.states.find(s => s.id === curState);
   document.getElementById('cur-state-num').textContent = curState;
@@ -149,13 +170,11 @@ function renderStep(idx) {
       stateData.items.map(formatItem).join('<br>');
   }
 
-  // Highlight step log entry
   document.querySelectorAll('.log-entry').forEach((el, i) => {
     el.classList.toggle('active-log', i === idx);
     if (i === idx) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   });
 
-  // Sync parse table and graph
   highlightTableRow(curState);
   activeStates.clear();
   step.stateStack.forEach(s => activeStates.add(s));
@@ -186,6 +205,28 @@ function buildStepLog() {
 function stepForward() { if (currentStep < parseSteps.length - 1) renderStep(currentStep + 1); }
 function stepBack()    { if (currentStep > 0) renderStep(currentStep - 1); }
 
+const SPEED_MAP = { 1: 1600, 2: 1000, 3: 600, 4: 300, 5: 100 };
+let autoSpeed = 600;
+
+function updateSpeed(val) {
+  autoSpeed = SPEED_MAP[val] || 600;
+  document.getElementById('speed-val').textContent = val;
+  if (autoTimer) {
+    clearInterval(autoTimer);
+    autoTimer = setInterval(autoStep, autoSpeed);
+  }
+}
+
+function autoStep() {
+  if (currentStep >= parseSteps.length - 1) {
+    clearInterval(autoTimer);
+    autoTimer = null;
+    document.getElementById('btn-auto').textContent = 'Auto';
+    return;
+  }
+  stepForward();
+}
+
 function autoPlay() {
   if (autoTimer) {
     clearInterval(autoTimer);
@@ -194,13 +235,5 @@ function autoPlay() {
     return;
   }
   document.getElementById('btn-auto').textContent = 'Stop';
-  autoTimer = setInterval(() => {
-    if (currentStep >= parseSteps.length - 1) {
-      clearInterval(autoTimer);
-      autoTimer = null;
-      document.getElementById('btn-auto').textContent = 'Auto';
-      return;
-    }
-    stepForward();
-  }, 850);
+  autoTimer = setInterval(autoStep, autoSpeed);
 }

@@ -186,7 +186,6 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  border-left: 4px solid;
   animation: actionPop 0.22s cubic-bezier(0.34,1.56,0.64,1);
 }
 @keyframes actionPop {
@@ -280,3 +279,44 @@
 .type-reduce { background: var(--lavender);   color: #4527a0; }
 .type-accept { background: var(--mint);       color: #2e7d32; }
 .type-error  { background: #fce4ec;           color: #c62828; }
+
+/* Speed adjuster */
+.speed-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.speed-label {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+}
+.speed-slider {
+  -webkit-appearance: none;
+  width: 80px;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--pink-200);
+  outline: none;
+  cursor: pointer;
+}
+.speed-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--pink-400);
+  box-shadow: 0 1px 4px rgba(240,98,146,0.4);
+  transition: transform 0.12s;
+}
+.speed-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+.speed-val {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #b71c5e;
+  min-width: 14px;
+}

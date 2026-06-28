@@ -10,7 +10,6 @@
   <link rel="stylesheet" href="css/table.css">
   <link rel="stylesheet" href="css/graph.css">
   <style>
-    /* Grammar tab inline pieces that don't justify a full file */
     .grammar-productions {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
@@ -71,7 +70,6 @@
       gap: 8px;
     }
 
-    /* States tab */
     .states-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
@@ -118,174 +116,195 @@
 </head>
 <body>
 
-
 <header>
   <div class="header-orbs" id="header-orbs"></div>
   <h1>LR(1) Parser <span>Visualizer</span></h1>
+</header>
 
-<div class="tabs">
-  <button class="tab active" onclick="showTab('grammar',this)">Grammar</button>
-  <button class="tab"        onclick="showTab('simulation',this)">Simulation</button>
-  <button class="tab"        onclick="showTab('table',this)">Parse Table</button>
-  <button class="tab"        onclick="showTab('graph',this)">State Graph</button>
-  <button class="tab"        onclick="showTab('states',this)">LR(1) States</button>
-  <button class="tab"        onclick="showTab('trace',this)">Trace Table</button>
-</div>
+<div class="app-layout">
 
+  <nav class="sidebar">
+    <div class="sidebar-section-label">Analysis</div>
 
-<div id="tab-grammar" class="panel active">
+    <button class="nav-item active" onclick="showTab('grammar',this)">
+      Grammar
+    </button>
+    <button class="nav-item" onclick="showTab('states',this)">
+      LR(1) States
+    </button>
+    <button class="nav-item" onclick="showTab('table',this)">
+      Parse Table
+    </button>
+    <button class="nav-item" onclick="showTab('graph',this)">
+      State Graph
+    </button>
 
-  <div class="section">
-    <div class="section-title">Productions</div>
-    <div class="grammar-productions" id="grammar-productions"></div>
-    <div class="note">
-      In this grammar <code>*</code> is a unary prefix dereference operator (as in C), not multiplication.
-      The string <code>id = * id</code> means "assign the value at the address stored in id."
-    </div>
-  </div>
+    <div class="nav-divider"></div>
+    <div class="sidebar-section-label">Parsing</div>
 
-  <div class="two-col">
-    <div class="section">
-      <div class="section-title">Terminals</div>
-      <div class="sym-set" id="grammar-terminals"></div>
-    </div>
-    <div class="section">
-      <div class="section-title">Non-Terminals</div>
-      <div class="sym-set" id="grammar-nonterminals"></div>
-    </div>
-  </div>
+    <button class="nav-item" onclick="showTab('simulation',this)">
+      Simulation
+    </button>
+    <button class="nav-item" onclick="showTab('trace',this)">
+      Trace Table
+    </button>
+  </nav>
 
-  <div class="section">
-    <div class="section-title">FIRST Sets</div>
-    <div class="first-grid" id="grammar-first"></div>
-  </div>
+  <main class="content">
 
-</div>
+    <div id="tab-grammar" class="panel active">
 
-
-<div id="tab-simulation" class="panel">
-
-  <div class="controls">
-    <input type="text" id="input-string" value="id = * id" placeholder="tokens separated by spaces" />
-    <button class="btn btn-pink"    onclick="loadAndParse()">Parse</button>
-    <button class="btn btn-outline" onclick="stepBack()"    id="btn-back" disabled>Back</button>
-    <button class="btn btn-blue"    onclick="stepForward()" id="btn-fwd"  disabled>Next</button>
-    <button class="btn btn-outline" onclick="autoPlay()"    id="btn-auto" disabled>Auto</button>
-    <span class="step-counter" id="step-counter">Step 0 / 0</span>
-  </div>
-
-  <div class="quick-row">
-    <span class="quick-label">Try:</span>
-    <button class="quick-btn" onclick="quickLoad('id = * id')">id = * id</button>
-    <button class="quick-btn" onclick="quickLoad('id')">id</button>
-    <button class="quick-btn" onclick="quickLoad('* id')">* id</button>
-    <button class="quick-btn" onclick="quickLoad('id = id')">id = id</button>
-    <button class="quick-btn" onclick="quickLoad('* * id')">* * id</button>
-    <button class="quick-btn" onclick="quickLoad('id = x')">id = x (error)</button>
-  </div>
-
-  <div class="progress-wrap">
-    <div class="progress-bar" id="progress-bar" style="width:0%"></div>
-  </div>
-
-  <div class="two-col">
-    <div>
       <div class="section">
-        <div class="section-title">Input Tape</div>
-        <div class="tape" id="tape-display"></div>
+        <div class="section-title">Productions</div>
+        <div class="grammar-productions" id="grammar-productions"></div>
+        <div class="note">
+          In this grammar <code>*</code> is a unary prefix dereference operator (as in C), not multiplication.
+          The string <code>id = * id</code> means "assign the value at the address stored in id."
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="section">
+          <div class="section-title">Terminals</div>
+          <div class="sym-set" id="grammar-terminals"></div>
+        </div>
+        <div class="section">
+          <div class="section-title">Non-Terminals</div>
+          <div class="sym-set" id="grammar-nonterminals"></div>
+        </div>
       </div>
 
       <div class="section">
-        <div class="section-title">Stacks</div>
-        <div class="stack-container">
-          <div class="stack-col">
-            <div class="stack-label">State Stack</div>
-            <div class="stack-cells" id="state-stack"></div>
+        <div class="section-title">FIRST Sets</div>
+        <div class="first-grid" id="grammar-first"></div>
+      </div>
+
+    </div>
+
+    <div id="tab-states" class="panel">
+      <div class="section">
+        <div class="section-title">All LR(1) Item Sets (14 states)</div>
+        <div id="all-states"></div>
+      </div>
+    </div>
+
+    <div id="tab-table" class="panel">
+      <div class="banner banner-ok" id="conflict-banner">
+        No conflicts detected. The grammar is LR(1) and the parse table is deterministic.
+      </div>
+      <div class="section">
+        <div class="section-title">ACTION / GOTO Table</div>
+        <div class="table-wrap">
+          <table class="parse-table" id="parse-table-el"></table>
+        </div>
+        <div class="table-legend">
+          <span><span class="cell-shift">sN</span> = Shift to state N</span>
+          <span><span class="cell-reduce">rN</span> = Reduce by production N</span>
+          <span><span class="cell-accept">acc</span> = Accept</span>
+          <span><span class="cell-empty" style="font-style:italic;font-size:0.8rem;">empty</span> = Error</span>
+        </div>
+      </div>
+    </div>
+
+   <div id="tab-graph" class="panel">
+      <div class="section">
+        <div class="section-title">LR(1) Automaton State Transition Graph</div>
+        <p style="font-family:var(--font-ui);font-size:0.82rem;color:var(--text-muted);margin-bottom:10px;">
+          Drag nodes to rearrange. Click a node to inspect its items. Active parse path highlighted in pink.
+        </p>
+        <div class="graph-wrap">
+          <canvas id="graph-canvas"></canvas>
+        </div>
+        <div class="graph-legend">
+          <span><span class="legend-swatch" style="background:#fce4ec;border:2px solid #e91e8c;"></span>Active</span>
+          <span><span class="legend-swatch" style="background:#e8f5e9;border:2px solid #43a047;"></span>Accept</span>
+          <span><span class="legend-swatch" style="background:#fffde7;border:2px solid #f9a825;"></span>Start</span>
+          <span><span class="legend-swatch" style="background:#e3f2fd;border:2px solid #90caf9;"></span>Normal</span>
+        </div>
+        <div class="state-items" id="graph-info" style="display:none;margin-top:12px;"></div>
+      </div>
+    </div>
+
+    <div id="tab-simulation" class="panel">
+
+      <div class="controls">
+        <input type="text" id="input-string" value="id = * id" placeholder="tokens separated by spaces" />
+        <button class="btn btn-pink"    onclick="loadAndParse()">Parse</button>
+        <button class="btn btn-outline" onclick="stepBack()"    id="btn-back" disabled>Back</button>
+        <button class="btn btn-blue"    onclick="stepForward()" id="btn-fwd"  disabled>Next</button>
+        <button class="btn btn-outline" onclick="autoPlay()"    id="btn-auto" disabled>Auto</button>
+        <span class="step-counter" id="step-counter">Step 0 / 0</span>
+        <div class="speed-wrap">
+          <label class="speed-label" for="speed-slider">Speed</label>
+          <input type="range" id="speed-slider" min="1" max="5" value="3" class="speed-slider" oninput="updateSpeed(this.value)">
+          <span class="speed-val" id="speed-val">3</span>
+        </div>
+      </div>
+
+      <div class="quick-row">
+        <span class="quick-label">Try:</span>
+        <button class="quick-btn" onclick="quickLoad('id = * id')">id = * id</button>
+        <button class="quick-btn" onclick="quickLoad('id')">id</button>
+        <button class="quick-btn" onclick="quickLoad('* id')">* id</button>
+        <button class="quick-btn" onclick="quickLoad('id = id')">id = id</button>
+        <button class="quick-btn" onclick="quickLoad('* * id')">* * id</button>
+        <button class="quick-btn" onclick="quickLoad('id = x')">id = x (error)</button>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <div class="section">
+            <div class="section-title">Input Tape</div>
+            <div class="tape" id="tape-display"></div>
           </div>
-          <div class="stack-col">
-            <div class="stack-label">Symbol Stack</div>
-            <div class="stack-cells" id="symbol-stack"></div>
+          <div class="section">
+            <div class="section-title">Stacks</div>
+            <div class="stack-container">
+              <div class="stack-col">
+                <div class="stack-label">State Stack</div>
+                <div class="stack-cells" id="state-stack"></div>
+              </div>
+              <div class="stack-col">
+                <div class="stack-label">Symbol Stack</div>
+                <div class="stack-cells" id="symbol-stack"></div>
+              </div>
+            </div>
+            <div id="action-display"></div>
           </div>
         </div>
-        <div id="action-display"></div>
+
+        <div>
+          <div class="section">
+            <div class="section-title">Current State &mdash; <strong id="cur-state-num"></strong></div>
+            <div class="state-items" id="cur-state-items"></div>
+          </div>
+          <div class="section">
+            <div class="section-title">Parse Trace</div>
+            <div class="step-log" id="step-log"></div>
+          </div>
+        </div>
       </div>
+
     </div>
 
-    <div>
+    <div id="tab-trace" class="panel">
       <div class="section">
-        <div class="section-title">Current State &mdash; <strong id="cur-state-num">--</strong></div>
-        <div class="state-items" id="cur-state-items">--</div>
+        <div class="section-title">Traditional Parse Trace Table</div>
+        <p style="font-family:var(--font-ui);font-size:0.83rem;color:var(--text-muted);margin-bottom:12px;">
+          Standard format for compiler design exam submissions. Click any row to jump to that step in the simulation.
+        </p>
+        <div class="table-wrap">
+          <table class="parse-table" id="trace-table-el"></table>
+        </div>
       </div>
-
-      <div class="section">
-        <div class="section-title">Parse Trace</div>
-        <div class="step-log" id="step-log"></div>
-      </div>
     </div>
-  </div>
 
+  </main>
 </div>
-
-
-<div id="tab-table" class="panel">
-  <div class="banner banner-ok" id="conflict-banner">
-    No conflicts detected. The grammar is LR(1) and the parse table is deterministic.
-  </div>
-  <div class="section">
-    <div class="section-title">ACTION / GOTO Table</div>
-    <div class="table-wrap">
-      <table class="parse-table" id="parse-table-el"></table>
-    </div>
-    <div class="table-legend">
-      <span><span class="cell-shift">sN</span> = Shift to state N</span>
-      <span><span class="cell-reduce">rN</span> = Reduce by production N</span>
-      <span><span class="cell-accept">acc</span> = Accept</span>
-      <span><span class="cell-empty">--</span> = Error</span>
-    </div>
-  </div>
-</div>
-
-
-<div id="tab-graph" class="panel">
-  <div class="section">
-    <div class="section-title">LR(1) Automaton &mdash; State Transition Graph</div>
-    <p style="font-family:var(--font-ui);font-size:0.82rem;color:var(--text-muted);margin-bottom:10px;">
-      Drag nodes to rearrange. Click a node to inspect its items. Active parse path highlighted in pink.
-    </p>
-    <div class="graph-wrap">
-      <canvas id="graph-canvas"></canvas>
-    </div>
-    <div class="graph-legend">
-      <span><span class="legend-swatch" style="background:#fce4ec;border:2px solid #e91e8c;"></span>Active</span>
-      <span><span class="legend-swatch" style="background:#e8f5e9;border:2px solid #43a047;"></span>Accept</span>
-      <span><span class="legend-swatch" style="background:#fffde7;border:2px solid #f9a825;"></span>Start</span>
-      <span><span class="legend-swatch" style="background:#e3f2fd;border:2px solid #90caf9;"></span>Normal</span>
-    </div>
-    <div class="state-items" id="graph-info" style="display:none;margin-top:12px;"></div>
-  </div>
-</div>
-
-
-<div id="tab-states" class="panel">
-  <div class="section">
-    <div class="section-title">All LR(1) Item Sets (14 states)</div>
-    <div id="all-states"></div>
-  </div>
-</div>
-
-
-<div id="tab-trace" class="panel">
-  <div class="section">
-    <div class="section-title">Traditional Parse Trace Table</div>
-    <p style="font-family:var(--font-ui);font-size:0.83rem;color:var(--text-muted);margin-bottom:12px;">
-      Standard format for compiler design exam submissions. Click any row to jump to that step in the simulation.
-    </p>
-    <div class="table-wrap">
-      <table class="parse-table" id="trace-table-el"></table>
-    </div>
-  </div>
-</div>
-
 
 <script src="js/data.js"></script>
 <script src="js/grammar.js"></script>

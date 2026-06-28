@@ -1,6 +1,6 @@
 function showTab(name, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   btn.classList.add('active');
 
@@ -8,7 +8,6 @@ function showTab(name, btn) {
   if (name === 'trace') renderTraceTable();
 }
 
-// Spawn floating orbs in the header
 function initOrbs() {
   const wrap = document.getElementById('header-orbs');
   const orbs = [
@@ -28,7 +27,6 @@ function initOrbs() {
   });
 }
 
-// Boot
 document.addEventListener('DOMContentLoaded', () => {
   initOrbs();
   renderGrammar();
